@@ -1,0 +1,21 @@
+language: generic
+sudo: required
+services:
+ - docker
+
+before_install:
+ - docker build -t titatreb/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true titatreb/react-test npm test
+
+after_success:
+  - docker build -t titatreb/multi-client ./client
+  - docker build -t titatreb/multi-server ./server
+  - docker build -t titatreb/multi-worker ./worker
+  - docker build -t titatreb/multi-nginx ./nginx
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push titatreb/multi-client
+  - docker push titatreb/multi-server
+  - docker push titatreb/multi-worker
+  - docker push titatreb/multi-nginx
